@@ -1,12 +1,12 @@
 # Power Apps Custom Pages JS Library - PowerThomas
-JS library of useful functions to use within Power Apps Model-driven Apps and Custom Pages. Currently
+JS library of useful functions to use within Power Apps Model-driven Apps and Custom Pages. Currently one function is documented below. More to come.
 
 ## Install & import
 1. Download the JS file
 2. Open the file in any preferred IDE and replace the `PowerThomas` namespace with your own (on top and at bottom)
 2. Add it as a JavaScript Web Resource in your Power Platform solution
 
-## Functions
+## Function
 ### OpenPage
 Opens a Page.
 #### Params
