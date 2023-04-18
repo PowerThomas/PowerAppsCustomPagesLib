@@ -13,7 +13,7 @@ Opens a Page.
 Use them is this order:
 |Type|Name|Description|
 |---|---|---|
-|{object}|executionContext|The event context from which this function is executed. If this function get triggered from a command bar button, then this is 'PrimayControl'.|
+|{object}|executionContext|The event context from which this function is executed. If this function is triggered from a command bar button, then this is 'PrimayControl'.|
 |{number}|sourceType|The type of source from where the Page is opened. 1 = form, 2 = view|
 |{string}|pageTitle|The title of the Page to open.|
 |{string}|pageType|The type of Page, e.g. "custom".|
