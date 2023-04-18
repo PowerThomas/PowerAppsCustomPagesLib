@@ -3,7 +3,7 @@
 
 var PowerThomas = PowerThomas || {};
 (function () {
-    // If true, various messages are logged in the console.
+	// If true, various messages are logged in the console.
 	const debug = true;
 
 	const logIndentation = "   ";
@@ -12,29 +12,29 @@ var PowerThomas = PowerThomas || {};
 	const logLine = "--------------------------------------------------";
 
 	/**
-	 * Opens a Page.
-	 *
-     * @param {object} executionContext The event context from which this function is executed. If this function get triggered from a command bar button, then this is 'PrimayControl'.
-	 * @param {number} sourceType The type of source from where the Page is opened. 1 = form, 2 = view
-     * @param {string} pageTitle The title of the Page to open.
-	 * @param {string} pageType The type of Page, e.g. "custom".
-	 * @param {string} pageLogicalName The logical name of the Page to open.
-	 * @param {string} entityLogicalName The logical name of the entity from which the page is opened.
-	 * @param {number} target How to open the Page. 1 = full page, 2 = dialog
-	 * @param {number} position If the target is set to 2, this defines the type of dialog. 1 = centered, 2 = sidepane.
-	 * @param {number} widthValue The width of the page.
-	 * @param {number} heightValue The height of the height.
-	 * @param {string} widthUnit The unit used to determine the width, e.g. "px" or "%".
-	 * @param {string} heightUnit The unit used to determine the height, e.g. "px" or "%".
-	 * @param {boolean} refreshFormOnClose Whether to refresh the form once the Page is closed (successfully).
-	 * @param {boolean} navigateToOverviewOnClose If true, it navigates to the overview of the current entity once the Page is closed (successfully).
-	 */
+		* Opens a Page.
+		*
+		* @param {object} executionContext The event context from which this function is executed. If this function get triggered from a command bar button, then this is 'PrimayControl'.
+		* @param {number} sourceType The type of source from where the Page is opened. 1 = form, 2 = view
+		* @param {string} pageTitle The title of the Page to open.
+		* @param {string} pageType The type of Page, e.g. "custom".
+		* @param {string} pageLogicalName The logical name of the Page to open.
+		* @param {string} entityLogicalName The logical name of the entity from which the page is opened.
+		* @param {number} target How to open the Page. 1 = full page, 2 = dialog
+		* @param {number} position If the target is set to 2, this defines the type of dialog. 1 = centered, 2 = sidepane.
+		* @param {number} widthValue The width of the page.
+		* @param {number} heightValue The height of the page.
+		* @param {string} widthUnit The unit used to determine the width, e.g. "px" or "%".
+		* @param {string} heightUnit The unit used to determine the height, e.g. "px" or "%".
+		* @param {boolean} refreshFormOnClose Whether to refresh the form once the Page is closed (successfully).
+		* @param {boolean} navigateToOverviewOnClose If true, it navigates to the overview of the current entity once the Page is closed (successfully).
+	*/
 	async function openPage(executionContext, sourceType, pageTitle, pageType, pageLogicalName, entityLogicalName, target, position, widthValue, heightValue, widthUnit, heightUnit, refreshFormOnClose, navigateToOverviewOnClose) {
 		log("openPage", arguments);
 
 		try {
 			// Get the ID of this record.
-            const recordID = (sourceType == 1) ? cleanID(executionContext.data.entity.getId()) : null;
+			const recordID = (sourceType == 1) ? cleanID(executionContext.data.entity.getId()) : null;
 
 			// Gather some input for the navigation
 			let pageInput =
@@ -96,40 +96,37 @@ var PowerThomas = PowerThomas || {};
 	this.Test = test;
 
 	/**
-	 * Removes the curly brackets from the usually passed row ID.
-	 *
-	 * @param {string} id The entity ID.
-	 *
-	 * @returns {string} The id as an actual guid.
-	 */
+		* Removes the curly brackets from the usually passed row ID.
+		*
+		* @param {string} id The entity ID.
+		*
+		* @returns {string} The id as an actual guid.
+	*/
 	function cleanID(id) {
 		return id?.replace(/[{}]/g, "")?.toUpperCase();
 	}
 	this.CleanID = cleanID;
 
-    /**
-	 * Logs a title, plus a line for each key-value pair found in the values.
-	 *
-	 * @param {string} title The title for the log.
-	 * @param {object} values A key-value pair array. This includes be JSON. You can also pass an array.
-	 */
-	function log(title, value)
-	{
+	/**
+		* Logs a title, plus a line for each key-value pair found in the values.
+		*
+		* @param {string} title The title for the log.
+		* @param {object} values A key-value pair array. This includes be JSON. You can also pass an array.
+	*/
+	function log(title, value) {
 		if (!debug)
 			return;
 
 		console.log(logLine);
 		console.log(title);
 
-		if (Array.isArray(value))
-		{
+		if (Array.isArray(value)) {
 			if (value.length == 0)
 				console.log("[]");
 			else
 				logArray(value);
 		}
-		else if (typeof value === 'object')
-		{
+		else if (typeof value === 'object') {
 			if (value === null)
 				console.log("null");
 			else
@@ -142,13 +139,12 @@ var PowerThomas = PowerThomas || {};
 	}
 	this.Log = log;
 
-    /**
-	 * Logs an array.
-	 *
-	 * @param {array} array The array to log.
-	 */
-	function logArray(array)
-	{
+	/**
+		* Logs an array.
+		*
+		* @param {array} array The array to log.
+	*/
+	function logArray(array) {
 		if (!debug)
 			return;
 
@@ -157,12 +153,11 @@ var PowerThomas = PowerThomas || {};
 	}
 
 	/**
-	 * Logs an object.
-	 *
-	 * @param {object} obj The object to log.
-	 */
-	function logObject(obj)
-	{
+		* Logs an object.
+		*
+		* @param {object} obj The object to log.
+	*/
+	function logObject(obj) {
 		if (!debug)
 			return;
 
