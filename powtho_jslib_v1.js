@@ -134,12 +134,6 @@ var PowerThomas = PowerThomas || {};
 	}
 	this.OpenPage = openPage;
 
-	function test(executionContext) {
-		console.log(executionContext)
-		console.log(executionContext.getEventSource())
-	}
-	this.Test = test;
-
 	/**
 		* Removes the curly brackets from the usually passed row ID.
 		*
