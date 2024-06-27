@@ -12,6 +12,44 @@ var PowerThomas = PowerThomas || {};
 	const logLine = "--------------------------------------------------";
 
 	/**
+	 * This function checks if the form is valid and if there are changes.
+	 * If it is NOT valid or there are changes, the form will be saved.
+	 * As it is not valid, the error notifications will be created.
+	 * True is returned if the form was saved successfully, false otherwise.
+	 *
+	 * @param {object} executionContext The Power Platform execution context.
+	 */
+	async function trySave(executionContext) {
+		const isValid = executionContext.data.isValid();
+		const isDirty = executionContext.data.getIsDirty();
+
+		// Save the current form
+		if (!isValid || isDirty) {
+			Xrm.Utility.showProgressIndicator("Loading...");
+
+			if (!isValid)
+				console.verbose(`Calling "save" as the record is invalid. This will create all notifications.`);
+			else if (isDirty)
+				console.verbose(`Calling "save" as the record is valid, but changed.`);
+
+			try {
+				await executionContext.data.save();
+			}
+			catch (ex) {
+				return false;
+			}
+			finally {
+				Xrm.Utility.closeProgressIndicator();
+			}
+		}
+		else
+			console.verbose(`No need to save. Everything is up to date.`);
+
+		return true;
+	}
+	this.TrySave = trySave;
+
+	/**
 		* Opens a Page.
 		*
 		* @param {object} executionContext The event context from which this function is executed. If this function get triggered from a command bar button, then this is 'PrimayControl'.
@@ -33,6 +71,13 @@ var PowerThomas = PowerThomas || {};
 		log("openPage", arguments);
 
 		try {
+			// We can only save if there is an executionContext
+			if (executionContext) {
+				// Save the current form
+				if (!await trySave(executionContext))
+					return;
+			}
+
 			// Get the ID of this record.
 			const recordID = (sourceType == 1) ? cleanID(executionContext.data.entity.getId()) : null;
 
@@ -88,6 +133,12 @@ var PowerThomas = PowerThomas || {};
 		}
 	}
 	this.OpenPage = openPage;
+
+	function test(executionContext) {
+		console.log(executionContext)
+		console.log(executionContext.getEventSource())
+	}
+	this.Test = test;
 
 	/**
 		* Removes the curly brackets from the usually passed row ID.
