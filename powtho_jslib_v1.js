@@ -28,9 +28,9 @@ var PowerThomas = PowerThomas || {};
 			Xrm.Utility.showProgressIndicator("Loading...");
 
 			if (!isValid)
-				console.verbose(`Calling "save" as the record is invalid. This will create all notifications.`);
+				console.debug(`Calling "save" as the record is invalid. This will create all notifications.`);
 			else if (isDirty)
-				console.verbose(`Calling "save" as the record is valid, but changed.`);
+				console.debug(`Calling "save" as the record is valid, but changed.`);
 
 			try {
 				await executionContext.data.save();
@@ -43,7 +43,7 @@ var PowerThomas = PowerThomas || {};
 			}
 		}
 		else
-			console.verbose(`No need to save. Everything is up to date.`);
+			console.debug(`No need to save. Everything is up to date.`);
 
 		return true;
 	}
@@ -108,13 +108,13 @@ var PowerThomas = PowerThomas || {};
 			Xrm.Utility.showProgressIndicator("Loading...");
 
 			// and once done, either refresh the data
-			if (refreshFormOnClose === "True") {
+			if (refreshFormOnClose) {
 				console.log("Refreshing data...");
 				await executionContext.data.refresh();
 				await executionContext.ui.refreshRibbon(true);
 			}
 			// or navigate to the overview of the provided entity.
-			else if (navigateToOverviewOnClose === "True") {
+			else if (navigateToOverviewOnClose) {
 				console.log("Navigating to overview...");
 				pageInput =
 				{
