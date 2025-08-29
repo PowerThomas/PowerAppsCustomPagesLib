@@ -86,9 +86,9 @@ var PowerThomas = PowerThomas || {};
       if (!row) return null;
 
       // Prefer modern shape; fall back to legacy methods for back-compat
-      const data   = row?.data ?? row?.getData?.();
+      const data = row?.data ?? row?.getData?.();
       const entity = data?.entity ?? data?.getEntity?.();
-      const rawId  = entity?.getId?.() ?? entity?.Id ?? entity?.id ?? null;
+      const rawId = entity?.getId?.() ?? entity?.Id ?? entity?.id ?? null;
 
       return cleanID(rawId);
     }
@@ -96,6 +96,38 @@ var PowerThomas = PowerThomas || {};
     return null;
   }
   this.ResolveRecordIdFromContext = resolveRecordIdFromContext;
+
+  /**
+   * Refresh current context after the dialog closes.
+   * - Form (1): refresh data + ribbon
+   * - Grid/Subgrid (2): prefer GridControl.refresh(); fall back to Grid.refresh()
+   */
+  async function refreshContext(executionContext, sourceType) {
+    if (sourceType === 1 && executionContext?.data) {
+      await executionContext.data.refresh();
+      await executionContext.ui?.refreshRibbon?.(true);
+      return;
+    }
+
+    if (sourceType === 2 && executionContext) {
+      // SelectedControl is typically a GridControl; .refresh() is usually here
+      const gridControl = (typeof executionContext.getGrid === "function") ? executionContext : null;
+      const grid = gridControl?.getGrid?.() ?? executionContext;
+
+      // Prefer control.refresh(); fallback to grid.refresh()
+      if (typeof gridControl?.refresh === "function") {
+        await gridControl.refresh();
+        return;
+      }
+      if (typeof grid?.refresh === "function") {
+        await grid.refresh();
+        return;
+      }
+
+      // Optional: als niets beschikbaar is, log het zodat we weten wat er binnenkwam
+      console.warn("[refreshContext] No refresh() available on SelectedControl or Grid.");
+    }
+  }
 
   /**
    * Opens a Page.
@@ -156,25 +188,10 @@ var PowerThomas = PowerThomas || {};
 
       // After closing: refresh current context or navigate to overview
       if (refreshOnClose) {
-        if (sourceType === 1 && executionContext?.data) {
-          // Form context: refresh data and ribbon
-          await executionContext.data.refresh();
-          await executionContext.ui?.refreshRibbon?.(true);
-        } else if (sourceType === 2) {
-          // Grid/Subgrid context: refresh grid if supported
-          const grid = (typeof executionContext?.getGrid === "function")
-            ? executionContext.getGrid()
-            : executionContext;
-          if (typeof grid?.refresh === "function") {
-            await grid.refresh();
-          }
-        }
+        await refreshContext(executionContext, sourceType);
       } else if (navigateToOverviewOnClose) {
         console.log("Navigating to overview...");
-        pageInput = {
-          pageType: "entitylist",
-          entityName: entityLogicalName
-        };
+        const pageInput = { pageType: "entitylist", entityName: entityLogicalName };
         await Xrm.Navigation.navigateTo(pageInput);
       }
     }
