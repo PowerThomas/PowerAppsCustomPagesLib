@@ -3,6 +3,8 @@
 
 var PowerThomas = PowerThomas || {};
 (function () {
+  "use strict";
+
   // If true, various messages are logged in the console.
   const debug = true;
 
@@ -50,17 +52,28 @@ var PowerThomas = PowerThomas || {};
   this.TrySave = trySave;
 
   /**
+   * Removes the curly brackets from the usually passed row ID.
+   *
+   * @param {string} id The entity ID.
+   * @returns {string} The id as an actual guid (uppercase, no braces).
+   */
+  function cleanID(id) {
+    return id ? String(id).replace(/[{}]/g, "").toUpperCase() : null;
+  }
+  this.CleanID = cleanID;
+
+  /**
    * Resolve the first selected record id based on context and sourceType.
    * Returns a clean GUID (without braces) or null.
    *
-   * @param {object} ctx         PrimaryControl (form) or SelectedControl (view/subgrid)
-   * @param {number} sourceType  1 = form, 2 = view/subgrid  (must be numeric)
+   * @param {object} ctx       PrimaryControl (form) or SelectedControl (view/subgrid)
+   * @param {number} sourceType 1 = form, 2 = view/subgrid (must be numeric)
    */
   function resolveRecordIdFromContext(ctx, sourceType) {
     // Form context (PrimaryControl)
     if (sourceType === 1) {
       const rawId = ctx?.data?.entity?.getId?.();
-      return cleanID?.(rawId) ?? null;
+      return cleanID(rawId);
     }
 
     // View/Subgrid context (SelectedControl is usually a GridControl)
@@ -73,11 +86,11 @@ var PowerThomas = PowerThomas || {};
       if (!row) return null;
 
       // Prefer modern shape; fall back to legacy methods for back-compat
-      const data = row?.data ?? row?.getData?.();
+      const data   = row?.data ?? row?.getData?.();
       const entity = data?.entity ?? data?.getEntity?.();
-      const rawId = entity?.getId?.() ?? entity?.Id ?? entity?.id ?? null;
+      const rawId  = entity?.getId?.() ?? entity?.Id ?? entity?.id ?? null;
 
-      return cleanID?.(rawId) ?? null;
+      return cleanID(rawId);
     }
 
     return null;
@@ -100,13 +113,14 @@ var PowerThomas = PowerThomas || {};
    * @param {number} heightValue The height of the page.
    * @param {string} widthUnit The unit used to determine the width, e.g. "px" or "%".
    * @param {string} heightUnit The unit used to determine the height, e.g. "px" or "%".
-   * @param {boolean} refreshFormOnClose Whether to refresh the form once the Page is closed (successfully).
-   * @param {boolean} navigateToOverviewOnClose If true, it navigates to the overview of the current entity once the Page is closed (successfully).
-  */
+   * @param {boolean} refreshOnClose Whether to refresh the current context once the Page is closed (successfully).
+   *                                 On forms: refresh form + ribbon. On views/subgrids: refresh grid (if supported).
+   * @param {boolean} navigateToOverviewOnClose If true, navigates to the overview of the current entity once the Page is closed (successfully).
+   */
   async function openPage(
     executionContext, sourceType, pageTitle, pageType, pageLogicalName,
     entityLogicalName, target, position, widthValue, heightValue,
-    widthUnit, heightUnit, refreshFormOnClose, navigateToOverviewOnClose
+    widthUnit, heightUnit, refreshOnClose, navigateToOverviewOnClose
   ) {
     log("openPage", arguments);
 
@@ -140,14 +154,22 @@ var PowerThomas = PowerThomas || {};
       // Show this indicator again, as the page was just closed.
       Xrm.Utility.showProgressIndicator("Loading...");
 
-      // After closing: either refresh the form (forms only)...
-      if (refreshFormOnClose && sourceType === 1 && executionContext?.data) {
-        console.log("Refreshing data...");
-        await executionContext.data.refresh();
-        await executionContext.ui?.refreshRibbon?.(true);
-      }
-      // ...or navigate to the overview of the provided entity.
-      else if (navigateToOverviewOnClose) {
+      // After closing: refresh current context or navigate to overview
+      if (refreshOnClose) {
+        if (sourceType === 1 && executionContext?.data) {
+          // Form context: refresh data and ribbon
+          await executionContext.data.refresh();
+          await executionContext.ui?.refreshRibbon?.(true);
+        } else if (sourceType === 2) {
+          // Grid/Subgrid context: refresh grid if supported
+          const grid = (typeof executionContext?.getGrid === "function")
+            ? executionContext.getGrid()
+            : executionContext;
+          if (typeof grid?.refresh === "function") {
+            await grid.refresh();
+          }
+        }
+      } else if (navigateToOverviewOnClose) {
         console.log("Navigating to overview...");
         pageInput = {
           pageType: "entitylist",
@@ -167,23 +189,11 @@ var PowerThomas = PowerThomas || {};
   this.OpenPage = openPage;
 
   /**
-   * Removes the curly brackets from the usually passed row ID.
-   *
-   * @param {string} id The entity ID.
-   *
-   * @returns {string} The id as an actual guid.
-  */
-  function cleanID(id) {
-    return id?.replace(/[{}]/g, "")?.toUpperCase();
-  }
-  this.CleanID = cleanID;
-
-  /**
    * Logs a title, plus a line for each key-value pair found in the values.
    *
    * @param {string} title The title for the log.
    * @param {object} values A key-value pair array. This includes be JSON. You can also pass an array.
-  */
+   */
   function log(title, value) {
     if (!debug)
       return;
@@ -214,7 +224,7 @@ var PowerThomas = PowerThomas || {};
    * Logs an array.
    *
    * @param {array} array The array to log.
-  */
+   */
   function logArray(array) {
     if (!debug)
       return;
@@ -227,7 +237,7 @@ var PowerThomas = PowerThomas || {};
    * Logs an object.
    *
    * @param {object} obj The object to log.
-  */
+   */
   function logObject(obj) {
     if (!debug)
       return;
